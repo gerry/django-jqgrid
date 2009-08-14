@@ -1,0 +1,69 @@
+= django-jqgrid =
+django-jqgrid aims to make integrating full support for jqgrid as simple as
+defining which models you want exposed, while still supporting the more
+advanced features.
+
+After unexpected interest, I have decided to provide an early release in the
+form as a utility class. This release is not stable or intented for production
+use. I will be cleaning up, restructuring (to a more flexible classed generic
+handler), and adding documentation/examples soon. Until then, you have been 
+warned! 
+
+== Prerequisites ==
+  * [http://code.google.com/p/dojango/source/browse/trunk/dojango/util/__init__.py#97 json_encode]
+  * [http://www.jquery.com jQuery 1.3+]
+  * [http://www.trirand.com/blog/?page_id=6 jqGrid 3.5+]
+
+== Example ==
+
+1. First define your grid somewhere (e.g., grids.py). Only a model or queryset
+   and a url are required.
+{{{
+class ExampleGrid(JqGrid):
+    model = SomeFancyModel # could also be a queryset
+    fields = ['id', 'name', 'desc'] # optional 
+    url = reverse('grid_handler')
+    caption = 'My First Grid' # optional
+    colmodel_overrides = {
+        'id': { 'editable': False, 'width':10 },
+    }
+}}}
+
+2. Create views to handle requests.
+{{{
+def grid_handler(request):
+    # handles pagination, sorting and searching
+    grid = ExampleGrid()
+    return HttpResponse(grid.get_json(request), mimetype="application/json")
+
+def grid_config(request):
+    # build a config suitable to pass to jqgrid constructor   
+    grid = RecoveryTaskGrid()
+    return HttpResponse(grid.get_config(), mimetype="application/json")
+
+}}}
+
+3. Define urls for those views.
+{{{
+url(r'^examplegrid/$', grid_handler, name='grid_handler'),
+url(r'^examplegrid/cfg/$', grid_config, name='grid_config'),
+}}}
+
+4. Configure jgrid to use the defined urls.
+{{{
+$(function () {
+    $.getJSON("{% url grid_config %}", function(data){
+        $("#mygrid")
+            .jqGrid(data)
+            .navGrid('#pager', 
+                {add: false, edit: false, del: false, view: true},
+        {}, // edit options
+        {}, // add options
+        {}, // del options 
+        { multipleSearch:true, closeOnEscape:true }, // search options 
+        { jqModal:false, closeOnEscape:true} // view options 
+        );
+    });
+});
+}}}
+
