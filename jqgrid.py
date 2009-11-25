@@ -236,14 +236,28 @@ class JqGrid(object):
         if as_json:
             config = json_encode(config)
         return config
+    
+    def lookup_foreign_key_field(self, options, field_name):
+        '''Make a field lookup converting __ into real models fields'''
+        if '__' in field_name:
+            fk_name, field_name = field_name.split('__', 1)
+            fields = [f for f in options.fields if f.name == fk_name]
+            if len(fields) > 0:
+                field_class = fields[0]
+            else:
+                raise FieldError('No field %s in %s' % (fk_name, options))
+            foreign_model_options = field_class.rel.to._meta
+            return self.lookup_foreign_key_field(foreign_model_options, field_name)
+        else:
+            return options.get_field_by_name(field_name)
 
     def get_colmodels(self):
         colmodels = []
         opts = self.get_model()._meta
         for field_name in self.get_field_names():
-            (field, model, direct, m2m) = opts.get_field_by_name(field_name)
-            colmodel = self.field_to_colmodel(field)
-            override = self.colmodel_overrides.get(field.name)
+            (field, model, direct, m2m) = self.lookup_foreign_key_field(opts, field_name)
+            colmodel = self.field_to_colmodel(field, field_name)
+            override = self.colmodel_overrides.get(field_name)
 
             if override:
                 colmodel.update(override)
@@ -256,9 +270,9 @@ class JqGrid(object):
             fields = [f.name for f in self.get_model()._meta.local_fields]
         return fields
 
-    def field_to_colmodel(self, field):
+    def field_to_colmodel(self, field, field_name):
         colmodel = {
-            'name': field.name,
+            'name': field_name,
             'index': field.name,
             'label': field.verbose_name,
             'editable': True
