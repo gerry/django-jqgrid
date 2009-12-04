@@ -151,12 +151,13 @@ class JqGrid(object):
 
     def sort_items(self, request, items):
         sidx = request.GET.get('sidx')
-        sord = request.GET.get('sord')
-        order_by = '%s%s' % (sord == 'desc' and '-' or '', sidx)
-        try:
-            items = items.order_by(order_by)
-        except FieldError:
-            pass
+        if sidx is not None:
+            sord = request.GET.get('sord')
+            order_by = '%s%s' % (sord == 'desc' and '-' or '', sidx)
+            try:
+                items = items.order_by(order_by)
+            except FieldError:
+                pass
         return items
 
     def get_paginate_by(self, request):
