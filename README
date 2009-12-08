@@ -38,7 +38,7 @@ def grid_handler(request):
 
 def grid_config(request):
     # build a config suitable to pass to jqgrid constructor   
-    grid = RecoveryTaskGrid()
+    grid = ExampleGrid()
     return HttpResponse(grid.get_config(), mimetype="application/json")
 
 }}}
