@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name = "django-jqgrid",
-    version = "r5",
+    version = "dev",
     author = "Gerry Eisenhaur",
     author_email = "gerry@hiredhacker.com",
     description  = ("django utilities allowing easy handling and configuration of jqGrids"),
