@@ -26,7 +26,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#
+
 import operator
 from django.db import models
 from django.core.exceptions import FieldError, ImproperlyConfigured
@@ -42,6 +42,7 @@ class JqGrid(object):
     model = None
     fields = []
     allow_empty = True
+    extra_config = {}
 
     pager_id = '#pager'
     url = None
@@ -229,6 +230,7 @@ class JqGrid(object):
 
     def get_config(self, as_json=True):
         config = self.get_default_config()
+        config.update(self.extra_config)
         config.update({
             'url': self.get_url(),
             'caption': self.get_caption(),
@@ -237,7 +239,7 @@ class JqGrid(object):
         if as_json:
             config = json_encode(config)
         return config
-    
+
     def lookup_foreign_key_field(self, options, field_name):
         '''Make a field lookup converting __ into real models fields'''
         if '__' in field_name:
