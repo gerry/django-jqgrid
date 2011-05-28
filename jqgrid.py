@@ -128,7 +128,7 @@ class JqGrid(object):
         for rule in _filters['rules']:
             op, field, data = rule['op'], rule['field'], rule['data']
             # FIXME: Restrict what lookups performed against RelatedFields
-            field_class = self.model._meta.get_field_by_name(field)[0]
+            field_class = self.get_model()._meta.get_field_by_name(field)[0]
             if isinstance(field_class, models.related.RelatedField):
                 op = 'eq'
             filter_fmt, exclude = filter_map[op]
