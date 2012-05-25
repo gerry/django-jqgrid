@@ -162,7 +162,7 @@ class JqGrid(object):
         return items
 
     def get_paginate_by(self, request):
-        rows = request.GET.get('rows', 10)
+        rows = request.GET.get('rows', self.get_config(False)['rowNum'])
         try:
             paginate_by = int(rows)
         except ValueError:
