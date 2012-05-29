@@ -34,8 +34,12 @@ from django.core.paginator import Paginator, InvalidPage
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.http import Http404
-from util.json import json_encode
+from dojango.util import json
+from django.core.serializers.json import DjangoJSONEncoder
 
+def json_encode(data):
+    encoder = DjangoJSONEncoder()
+    return encoder.encode(data)
 
 class JqGrid(object):
     queryset = None
@@ -187,12 +191,13 @@ class JqGrid(object):
 
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
-        return json_encode({
-            'page': page.number,
-            'total': paginator.num_pages,
-            'rows': items,
-            'records': paginator.count
-        })
+        data={
+            'page': int(page.number),
+            'total': int(paginator.num_pages),
+            'rows': [obj for obj in items],
+            'records': int(paginator.count),
+        }
+        return json_encode(data)
 
     def get_default_config(self):
         config = {
@@ -220,7 +225,7 @@ class JqGrid(object):
         return config
 
     def get_url(self):
-        return self.url
+        return str(self.url)
 
     def get_caption(self):
         if self.caption is None:
