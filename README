@@ -10,7 +10,6 @@ handler), and adding documentation/examples soon. Until then, you have been
 warned! 
 
 == Prerequisites ==
-  * [http://code.google.com/p/dojango/source/browse/trunk/dojango/util/__init__.py#97 json_encode]
   * [http://www.jquery.com jQuery 1.3+]
   * [http://www.trirand.com/blog/?page_id=6 jqGrid 3.5+]
 
@@ -22,7 +21,7 @@ warned!
 class ExampleGrid(JqGrid):
     model = SomeFancyModel # could also be a queryset
     fields = ['id', 'name', 'desc'] # optional 
-    url = reverse('grid_handler')
+    url = reverse_lazy('grid_handler')
     caption = 'My First Grid' # optional
     colmodel_overrides = {
         'id': { 'editable': False, 'width':10 },
