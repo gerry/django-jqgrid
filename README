@@ -1,4 +1,5 @@
-= django-jqgrid =
+django-jqgrid
+=============
 django-jqgrid aims to make integrating full support for jqgrid as simple as
 defining which models you want exposed, while still supporting the more
 advanced features.
@@ -9,15 +10,17 @@ use. I will be cleaning up, restructuring (to a more flexible classed generic
 handler), and adding documentation/examples soon. Until then, you have been 
 warned! 
 
-== Prerequisites ==
-  * [http://www.jquery.com jQuery 1.3+]
-  * [http://www.trirand.com/blog/?page_id=6 jqGrid 3.5+]
+Prerequisites
+-------------
+* [jQuery 1.3+](http://www.jquery.com)
+* [jqGrid 3.5+](http://www.trirand.com/blog/?page_id=6)
 
-== Example ==
+Example
+-------
 
 1. First define your grid somewhere (e.g., grids.py). Only a model or queryset
    and a url are required.
-{{{
+```
 class ExampleGrid(JqGrid):
     model = SomeFancyModel # could also be a queryset
     fields = ['id', 'name', 'desc'] # optional 
@@ -26,10 +29,10 @@ class ExampleGrid(JqGrid):
     colmodel_overrides = {
         'id': { 'editable': False, 'width':10 },
     }
-}}}
+```
 
 2. Create views to handle requests.
-{{{
+```
 def grid_handler(request):
     # handles pagination, sorting and searching
     grid = ExampleGrid()
@@ -39,17 +42,16 @@ def grid_config(request):
     # build a config suitable to pass to jqgrid constructor   
     grid = ExampleGrid()
     return HttpResponse(grid.get_config(), mimetype="application/json")
-
-}}}
+```
 
 3. Define urls for those views.
-{{{
+```
 url(r'^examplegrid/$', grid_handler, name='grid_handler'),
 url(r'^examplegrid/cfg/$', grid_config, name='grid_config'),
-}}}
+```
 
 4. Configure jgrid to use the defined urls.
-{{{
+```
 $(function () {
     $.getJSON("{% url grid_config %}", function(data){
         $("#mygrid")
@@ -64,5 +66,4 @@ $(function () {
         );
     });
 });
-}}}
-
+```
