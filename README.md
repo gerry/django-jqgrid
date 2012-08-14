@@ -21,49 +21,49 @@ Example
 1. First define your grid somewhere (e.g., grids.py). Only a model or queryset
    and a url are required.
 ```
-class ExampleGrid(JqGrid):
-    model = SomeFancyModel # could also be a queryset
-    fields = ['id', 'name', 'desc'] # optional 
-    url = reverse_lazy('grid_handler')
-    caption = 'My First Grid' # optional
-    colmodel_overrides = {
-        'id': { 'editable': False, 'width':10 },
-    }
+	class ExampleGrid(JqGrid):
+    	model = SomeFancyModel # could also be a queryset
+    	fields = ['id', 'name', 'desc'] # optional 
+    	url = reverse_lazy('grid_handler')
+    	caption = 'My First Grid' # optional
+    	colmodel_overrides = {
+       		'id': { 'editable': False, 'width':10 },
+   	 	}
 ```
 
 2. Create views to handle requests.
 ```
-def grid_handler(request):
-    # handles pagination, sorting and searching
-    grid = ExampleGrid()
-    return HttpResponse(grid.get_json(request), mimetype="application/json")
+	def grid_handler(request):
+    	# handles pagination, sorting and searching
+    	grid = ExampleGrid()
+    	return HttpResponse(grid.get_json(request), mimetype="application/json")
 
-def grid_config(request):
-    # build a config suitable to pass to jqgrid constructor   
-    grid = ExampleGrid()
-    return HttpResponse(grid.get_config(), mimetype="application/json")
+	def grid_config(request):
+    	# build a config suitable to pass to jqgrid constructor   
+    	grid = ExampleGrid()
+    	return HttpResponse(grid.get_config(), mimetype="application/json")
 ```
 
 3. Define urls for those views.
 ```
-url(r'^examplegrid/$', grid_handler, name='grid_handler'),
-url(r'^examplegrid/cfg/$', grid_config, name='grid_config'),
+	url(r'^examplegrid/$', grid_handler, name='grid_handler'),
+	url(r'^examplegrid/cfg/$', grid_config, name='grid_config'),
 ```
 
 4. Configure jgrid to use the defined urls.
 ```
-$(function () {
-    $.getJSON("{% url grid_config %}", function(data){
-        $("#mygrid")
-            .jqGrid(data)
-            .navGrid('#pager', 
-                {add: false, edit: false, del: false, view: true},
-        {}, // edit options
-        {}, // add options
-        {}, // del options 
-        { multipleSearch:true, closeOnEscape:true }, // search options 
-        { jqModal:false, closeOnEscape:true} // view options 
-        );
-    });
-});
+	$(function () {
+    	$.getJSON("{% url grid_config %}", function(data){
+        	$("#mygrid")
+            	.jqGrid(data)
+            	.navGrid('#pager', 
+                	{add: false, edit: false, del: false, view: true},
+       		{}, // edit options
+        	{}, // add options
+       	 	{}, // del options 
+        	{ multipleSearch:true, closeOnEscape:true }, // search options 
+        	{ jqModal:false, closeOnEscape:true} // view options 
+        	);
+    	});
+	});
 ```
