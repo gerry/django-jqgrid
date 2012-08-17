@@ -28,19 +28,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import operator
-from django.core.serializers import json
 from django.db import models
 from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.core.paginator import Paginator, InvalidPage
-from django.db.models.query import ValuesQuerySet
+from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.http import Http404
+from dojango.util import json
 from django.core.serializers.json import DjangoJSONEncoder
 
 def json_encode(data):
     encoder = DjangoJSONEncoder()
     return encoder.encode(data)
-
 
 class JqGrid(object):
     queryset = None
@@ -100,7 +99,7 @@ class JqGrid(object):
                 if all([field, op, data]):
                     filters = {
                         'groupOp': 'AND',
-                        'rules': [{'op': op, 'field': field, 'data': data}]
+                        'rules': [{ 'op': op, 'field': field, 'data': data }]
                     }
         return filters
 
@@ -112,7 +111,7 @@ class JqGrid(object):
             # jqgrid op: (django_lookup, use_exclude)
             'ne': ('%(field)s__exact', True),
             'bn': ('%(field)s__startswith', True),
-            'en': ('%(field)s__endswith', True),
+            'en': ('%(field)s__endswith',  True),
             'nc': ('%(field)s__contains', True),
             'ni': ('%(field)s__in', True),
             'in': ('%(field)s__in', False),
@@ -180,7 +179,7 @@ class JqGrid(object):
             return (None, None, items)
 
         paginator = Paginator(items, paginate_by,
-            allow_empty_first_page=self.allow_empty)
+                              allow_empty_first_page=self.allow_empty)
         page = request.GET.get('page', 1)
 
         try:
@@ -192,15 +191,12 @@ class JqGrid(object):
 
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
-        #Fix for queryset
-        if type(items) != type(ValuesQuerySet):
-            items = items.values()
-        data = {
+        data={
             'page': int(page.number),
             'total': int(paginator.num_pages),
             'rows': [obj for obj in items],
             'records': int(paginator.count),
-            }
+        }
         return json_encode(data)
 
     def get_default_config(self):
@@ -209,7 +205,7 @@ class JqGrid(object):
             'autowidth': True,
             'forcefit': True,
             'shrinkToFit': True,
-            'jsonReader': {'repeatitems': False},
+            'jsonReader': { 'repeatitems': False  },
             'rowNum': 10,
             'rowList': [10, 25, 50, 100],
             'sortname': 'id',
@@ -244,7 +240,7 @@ class JqGrid(object):
             'url': self.get_url(),
             'caption': self.get_caption(),
             'colModel': self.get_colmodels(),
-            })
+        })
         if as_json:
             config = json_encode(config)
         return config
