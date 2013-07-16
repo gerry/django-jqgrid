@@ -125,6 +125,17 @@ class JqGrid(object):
             'ew': ('%(field)s__endswith', False),
             'cn': ('%(field)s__contains', False)
         }
+        if self.get_config(False)['ignoreCase']:
+            filter_map.update({'ne': ('%(field)s__iexact', True),
+                               'eq': ('%(field)s__iexact', False),
+                               'bn': ('%(field)s__istartswith', True),
+                               'bw': ('%(field)s__istartswith', False),
+                               'en': ('%(field)s__iendswith', True),
+                               'ew': ('%(field)s__iendswith', False),
+                               'nc': ('%(field)s__icontains', True),
+                               'cn': ('%(field)s__icontains', False)
+                               }
+                              )
         _filters = self.get_filters(request)
         if _filters is None:
             return items
