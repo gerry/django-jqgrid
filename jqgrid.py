@@ -218,6 +218,7 @@ class JqGrid(object):
             'datatype': 'json',
             'autowidth': True,
             'forcefit': True,
+            'ignoreCase': True,
             'shrinkToFit': True,
             'jsonReader': {'repeatitems': False},
             'rowNum': 10,
