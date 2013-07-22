@@ -169,10 +169,18 @@ class JqGrid(object):
     def sort_items(self, request, items):
         sidx = request.GET.get('sidx')
         if sidx is not None:
+            order_by_list = []
             sord = request.GET.get('sord')
-            order_by = '%s%s' % (sord == 'desc' and '-' or '', sidx)
+            sidx_list = map(lambda x: x.strip(),sidx.split(','))
+            for item in sidx_list:
+                ordering = item.split(' ')
+                if len(ordering) > 1:
+                    order_by = u"{0}{1}".format(ordering[1]== 'desc' and '-' or '', ordering[0])
+                else:
+                    order_by = u"{0}{1}".format(sord == 'desc' and '-' or '', ordering[0])
+                order_by_list.append(order_by)
             try:
-                items = items.order_by(order_by)
+                items = items.order_by(*order_by_list)
             except FieldError:
                 pass
         return items
