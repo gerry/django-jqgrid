@@ -286,14 +286,23 @@ class JqGrid(object):
         colmodels = []
         opts = self.get_model()._meta
         for field_name in self.get_field_names():
-            (field, model, direct, m2m) = self.lookup_foreign_key_field(opts, field_name)
-            colmodel = self.field_to_colmodel(field, field_name)
+            try:
+                (field, model, direct, m2m) = self.lookup_foreign_key_field(opts, field_name)
+                colmodel = self.field_to_colmodel(field, field_name)
+            except FieldDoesNotExist:
+                colmodel = {
+                    'name': field_name,
+                    'index': field_name,
+                    'label': field_name,
+                    'editable': False
+                }
             override = self.colmodel_overrides.get(field_name)
 
             if override:
                 colmodel.update(override)
             colmodels.append(colmodel)
         return colmodels
+
 
     def get_field_names(self):
         fields = self.fields
