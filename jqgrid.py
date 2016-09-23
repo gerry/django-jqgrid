@@ -32,7 +32,7 @@ from django.core.serializers import json
 from django.db import models
 from django.core.exceptions import FieldError, ImproperlyConfigured
 from django.core.paginator import Paginator, InvalidPage
-from django.db.models.query import ValuesQuerySet
+# from django.db.models.query import ValuesQuerySet
 from django.utils.encoding import smart_str
 from django.http import Http404
 from django.core.serializers.json import DjangoJSONEncoder
@@ -58,7 +58,7 @@ class JqGrid(object):
         if hasattr(self, 'queryset') and self.queryset is not None:
             queryset = self.queryset._clone()
         elif hasattr(self, 'model') and self.model is not None:
-            queryset = self.model.objects.values(*self.get_field_names())
+            queryset = self.model.objects.all() # formerly: values(*self.get_field_names())
         else:
             raise ImproperlyConfigured("No queryset or model defined.")
         self.queryset = queryset
@@ -192,8 +192,8 @@ class JqGrid(object):
 
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
-        if type(items) != ValuesQuerySet:
-            items = items.values()
+        # if type(items) != ValuesQuerySet: # ValuesQuerySet deprecated in Django 1.9
+        items = items.values()
         data = {
             'page': int(page.number),
             'total': int(paginator.num_pages),
