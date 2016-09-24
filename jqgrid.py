@@ -36,6 +36,7 @@ from django.core.exceptions import FieldError, ImproperlyConfigured, FieldDoesNo
 from django.core.paginator import Paginator, InvalidPage
 from django.utils.encoding import smart_str
 
+
 def json_encode(data):
     encoder = json.DjangoJSONEncoder()
     return encoder.encode(data)
@@ -57,7 +58,7 @@ class JqGrid(object):
         if hasattr(self, 'queryset') and self.queryset is not None:
             queryset = self.queryset._clone()
         elif hasattr(self, 'model') and self.model is not None:
-            queryset = self.model.objects.all() # formerly: values(*self.get_field_names())
+            queryset = self.model.objects.all()  # formerly: values(*self.get_field_names())
         else:
             raise ImproperlyConfigured("No queryset or model defined.")
         self.queryset = queryset
@@ -86,13 +87,15 @@ class JqGrid(object):
         filters = None
 
         if _search == 'true':
+            # multiple field search
             _filters = request.GET.get('filters')
             try:
-                filters = _filters and json.json.loads(_filters)
+                filters = len(_filters) > 0 and json.json.loads(_filters)
             except ValueError:
                 return None
 
-            if filters is None:
+            # single field search
+            if not filters:
                 field = request.GET.get('searchField')
                 op = request.GET.get('searchOper')
                 data = request.GET.get('searchString')
@@ -102,6 +105,7 @@ class JqGrid(object):
                         'groupOp': 'AND',
                         'rules': [{'op': op, 'field': field, 'data': data}]
                     }
+
         return filters
 
     def filter_items(self, request, items):
@@ -171,11 +175,11 @@ class JqGrid(object):
         if sidx is not None:
             order_by_list = []
             sord = request.GET.get('sord')
-            sidx_list = map(lambda x: x.strip(),sidx.split(','))
+            sidx_list = map(lambda x: x.strip(), sidx.split(','))
             for item in sidx_list:
                 ordering = item.split(' ')
                 if len(ordering) > 1:
-                    order_by = u"{0}{1}".format(ordering[1]== 'desc' and '-' or '', ordering[0])
+                    order_by = u"{0}{1}".format(ordering[1] == 'desc' and '-' or '', ordering[0])
                 else:
                     order_by = u"{0}{1}".format(sord == 'desc' and '-' or '', ordering[0])
                 order_by_list.append(order_by)
@@ -199,7 +203,7 @@ class JqGrid(object):
             return None, None, items
 
         paginator = Paginator(items, paginate_by,
-            allow_empty_first_page=self.allow_empty)
+                              allow_empty_first_page=self.allow_empty)
         page = request.GET.get('page', 1)
 
         try:
@@ -218,7 +222,7 @@ class JqGrid(object):
             'total': int(paginator.num_pages),
             'rows': [obj for obj in items],
             'records': int(paginator.count),
-            }
+        }
         return json_encode(data)
 
     def get_default_config(self):
@@ -238,12 +242,12 @@ class JqGrid(object):
             'altRows': True,
             'gridview': True,
             'height': 'auto',
-            #'multikey': 'ctrlKey',
-            #'multiboxonly': True,
-            #'multiselect': True,
-            #'toolbar': [False, 'bottom'],
-            #'userData': None,
-            #'rownumbers': False,
+            # 'multikey': 'ctrlKey',
+            # 'multiboxonly': True,
+            # 'multiselect': True,
+            # 'toolbar': [False, 'bottom'],
+            # 'userData': None,
+            # 'rownumbers': False,
         }
         return config
 
@@ -263,7 +267,7 @@ class JqGrid(object):
             'url': self.get_url(),
             'caption': self.get_caption(),
             'colModel': self.get_colmodels(),
-            })
+        })
         if as_json:
             config = json_encode(config)
         return config
@@ -302,7 +306,6 @@ class JqGrid(object):
                 colmodel.update(override)
             colmodels.append(colmodel)
         return colmodels
-
 
     def get_field_names(self):
         fields = self.fields
