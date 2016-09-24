@@ -26,19 +26,18 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+from functools import reduce
 
 import operator
 from django.core.serializers import json
 from django.db import models
-from django.core.exceptions import FieldError, ImproperlyConfigured
+from django.db.models.fields.related import RelatedField
+from django.core.exceptions import FieldError, ImproperlyConfigured, FieldDoesNotExist
 from django.core.paginator import Paginator, InvalidPage
-# from django.db.models.query import ValuesQuerySet
 from django.utils.encoding import smart_str
-from django.http import Http404
-from django.core.serializers.json import DjangoJSONEncoder
 
 def json_encode(data):
-    encoder = DjangoJSONEncoder()
+    encoder = json.DjangoJSONEncoder()
     return encoder.encode(data)
 
 
@@ -79,16 +78,17 @@ class JqGrid(object):
         items = self.filter_items(request, items)
         items = self.sort_items(request, items)
         paginator, page, items = self.paginate_items(request, items)
-        return (paginator, page, items)
+        return paginator, page, items
 
-    def get_filters(self, request):
+    @staticmethod
+    def get_filters(request):
         _search = request.GET.get('_search')
         filters = None
 
         if _search == 'true':
             _filters = request.GET.get('filters')
             try:
-                filters = _filters and json.loads(_filters)
+                filters = _filters and json.json.loads(_filters)
             except ValueError:
                 return None
 
@@ -145,12 +145,11 @@ class JqGrid(object):
             op, field, data = rule['op'], rule['field'], rule['data']
             # FIXME: Restrict what lookups performed against RelatedFields
             field_class = self.get_model()._meta.get_field_by_name(field)[0]
-            if isinstance(field_class, models.related.RelatedField):
+            if isinstance(field_class, RelatedField):
                 op = 'eq'
             filter_fmt, exclude = filter_map[op]
             filter_str = smart_str(filter_fmt % {'field': field})
             if filter_fmt.endswith('__in'):
-                d_split = data.split(',')
                 filter_kwargs = {filter_str: data.split(',')}
             else:
                 filter_kwargs = {filter_str: smart_str(data)}
@@ -166,7 +165,8 @@ class JqGrid(object):
             filters = reduce(operator.iand, q_filters)
         return items.filter(filters)
 
-    def sort_items(self, request, items):
+    @staticmethod
+    def sort_items(request, items):
         sidx = request.GET.get('sidx')
         if sidx is not None:
             order_by_list = []
@@ -196,7 +196,7 @@ class JqGrid(object):
     def paginate_items(self, request, items):
         paginate_by = self.get_paginate_by(request)
         if not paginate_by:
-            return (None, None, items)
+            return None, None, items
 
         paginator = Paginator(items, paginate_by,
             allow_empty_first_page=self.allow_empty)
@@ -207,7 +207,7 @@ class JqGrid(object):
             page = paginator.page(page_number)
         except (ValueError, InvalidPage):
             page = paginator.page(1)
-        return (paginator, page, page.object_list)
+        return paginator, page, page.object_list
 
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
@@ -269,7 +269,7 @@ class JqGrid(object):
         return config
 
     def lookup_foreign_key_field(self, options, field_name):
-        '''Make a field lookup converting __ into real models fields'''
+        """Make a field lookup converting __ into real models fields"""
         if '__' in field_name:
             fk_name, field_name = field_name.split('__', 1)
             fields = [f for f in options.fields if f.name == fk_name]
@@ -310,7 +310,8 @@ class JqGrid(object):
             fields = [f.name for f in self.get_model()._meta.local_fields]
         return fields
 
-    def field_to_colmodel(self, field, field_name):
+    @staticmethod
+    def field_to_colmodel(field, field_name):
         colmodel = {
             'name': field_name,
             'index': field.name,
