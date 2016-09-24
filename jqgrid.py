@@ -212,7 +212,7 @@ class JqGrid(object):
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
         # if type(items) != ValuesQuerySet: # ValuesQuerySet deprecated in Django 1.9
-        items = items.values()
+        items = items.values() if items.count() > 0 else []
         data = {
             'page': int(page.number),
             'total': int(paginator.num_pages),
