@@ -86,37 +86,36 @@ class JqGrid(object):
         _search = request.GET.get('_search')
         filters = None
 
-        if _search == 'true':
-            # multiple field search
-            _filters = request.GET.get('filters', '')
-            if _filters:
-                try:
-                    filters = json.json.loads(_filters)
-                except ValueError:
-                    return None
+        # multiple field search
+        _filters = request.GET.get('filters', '')
+        if _filters:
+            try:
+                filters = json.json.loads(_filters)
+            except ValueError:
+                return None
 
-            else:
-                field = request.GET.get('searchField')
-                op = request.GET.get('searchOper')
-                data = request.GET.get('searchString')
+        else:
+            field = request.GET.get('searchField')
+            op = request.GET.get('searchOper')
+            data = request.GET.get('searchString')
 
-                # single field search
-                if all([field, op, data]):
-                    filters = {
-                        'groupOp': 'AND',
-                        'rules': [{'op': op, 'field': field, 'data': data}]
-                    }
+            # single field search
+            if all([field, op, data]):
+                filters = {
+                    'groupOp': 'AND',
+                    'rules': [{'op': op, 'field': field, 'data': data}]
+                }
 
-                # toolbar search
-                else:
-                    field_names = [f.name for f in self.get_model()._meta.local_fields]
-                    filters = {
-                        'groupOp': 'AND',
-                        'rules': []
-                    }
-                    for param in request.GET:
-                        if param in field_names:
-                            filters['rules'] += [{'op': 'cn', 'field': param, 'data': request.GET[param]}]
+        # toolbar search - this may work in addition to field searches
+        field_names = [f.name for f in self.get_model()._meta.local_fields]
+        if not filters:
+            filters = {
+                'groupOp': 'AND',
+                'rules': []
+            }
+        for param in request.GET:
+            if param in field_names:
+                filters['rules'] += [{'op': 'cn', 'field': param, 'data': request.GET[param]}]
 
         return filters
 
@@ -153,7 +152,7 @@ class JqGrid(object):
                                }
                               )
         _filters = self.get_filters(request)
-        if not _filters:
+        if not _filters or not _filters['rules']:
             return items
 
         q_filters = []
