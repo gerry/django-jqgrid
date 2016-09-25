@@ -81,30 +81,42 @@ class JqGrid(object):
         paginator, page, items = self.paginate_items(request, items)
         return paginator, page, items
 
-    @staticmethod
-    def get_filters(request):
+
+    def get_filters(self, request):
         _search = request.GET.get('_search')
         filters = None
 
         if _search == 'true':
             # multiple field search
-            _filters = request.GET.get('filters')
-            try:
-                filters = len(_filters) > 0 and json.json.loads(_filters)
-            except ValueError:
-                return None
+            _filters = request.GET.get('filters', '')
+            if _filters:
+                try:
+                    filters = json.json.loads(_filters)
+                except ValueError:
+                    return None
 
-            # single field search
-            if not filters:
+            else:
                 field = request.GET.get('searchField')
                 op = request.GET.get('searchOper')
                 data = request.GET.get('searchString')
 
+                # single field search
                 if all([field, op, data]):
                     filters = {
                         'groupOp': 'AND',
                         'rules': [{'op': op, 'field': field, 'data': data}]
                     }
+
+                # toolbar search
+                else:
+                    field_names = [f.name for f in self.get_model()._meta.local_fields]
+                    filters = {
+                        'groupOp': 'AND',
+                        'rules': []
+                    }
+                    for param in request.GET:
+                        if param in field_names:
+                            filters['rules'] += [{'op': 'cn', 'field': param, 'data': request.GET[param]}]
 
         return filters
 
@@ -141,7 +153,7 @@ class JqGrid(object):
                                }
                               )
         _filters = self.get_filters(request)
-        if _filters is None:
+        if not _filters:
             return items
 
         q_filters = []
