@@ -225,8 +225,7 @@ class JqGrid(object):
 
     def get_json(self, request):
         paginator, page, items = self.get_items(request)
-        # if type(items) != ValuesQuerySet: # ValuesQuerySet deprecated in Django 1.9
-        items = items.values() if items.count() > 0 else []
+        items = items.values(*self.get_field_names()) if items.count() > 0 else []
         data = {
             'page': int(page.number),
             'total': int(paginator.num_pages),
@@ -328,7 +327,7 @@ class JqGrid(object):
         colmodel = {
             'name': field_name,
             'index': field.name,
-            'label': field.verbose_name.__str__(),
+            'label': field.verbose_name,
             'editable': True
         }
         return colmodel
