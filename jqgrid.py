@@ -81,7 +81,6 @@ class JqGrid(object):
         paginator, page, items = self.paginate_items(request, items)
         return paginator, page, items
 
-
     def get_filters(self, request):
         _search = request.GET.get('_search')
         filters = None
@@ -159,7 +158,7 @@ class JqGrid(object):
         for rule in _filters['rules']:
             op, field, data = rule['op'], rule['field'], rule['data']
             # FIXME: Restrict what lookups performed against RelatedFields
-            field_class = self.get_model()._meta.get_field_by_name(field)[0]
+            field_class = self.get_model()._meta.get_field(field)
             if isinstance(field_class, RelatedField):
                 op = 'eq'
             filter_fmt, exclude = filter_map[op]
@@ -295,14 +294,14 @@ class JqGrid(object):
             foreign_model_options = field_class.rel.to._meta
             return self.lookup_foreign_key_field(foreign_model_options, field_name)
         else:
-            return options.get_field_by_name(field_name)
+            return options.get_field(field_name)
 
     def get_colmodels(self):
         colmodels = []
         opts = self.get_model()._meta
         for field_name in self.get_field_names():
             try:
-                (field, model, direct, m2m) = self.lookup_foreign_key_field(opts, field_name)
+                field = self.lookup_foreign_key_field(opts, field_name)
                 colmodel = self.field_to_colmodel(field, field_name)
             except FieldDoesNotExist:
                 colmodel = {
